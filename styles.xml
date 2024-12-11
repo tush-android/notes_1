@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Appname" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#273AB8</item>
+        <item name="colorPrimaryVariant">#252F75</item>
+        <item name="colorAccent">#3DADE9</item>
+    </style>
+
+    <style name="SplashScreenTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">#273AB8</item>
+        <item name="colorPrimaryVariant">#252F75</item>
+        <item name="colorAccent">#3DADE9</item>
+    </style>
+</resources>
