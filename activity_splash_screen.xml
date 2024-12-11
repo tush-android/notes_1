@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".SplashScreen"
+    android:background="#D81B60">
+    
+    <ImageView
+        android:id="@+id/c1"
+        android:layout_width="wrap_content"
+        android:layout_height="120dp"
+        android:src="@drawable/baseline_coffee_24"
+        android:layout_centerInParent="true"
+        app:tint="#FFD600"
+        />
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tea Diary"
+        android:textSize="30sp"
+        android:textColor="#FFD600"
+        android:textStyle="bold"
+        android:layout_below="@+id/c1"
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>
