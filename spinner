@@ -1,0 +1,34 @@
+//code for select all username from sqlite db:
+fun getallusername():List<String>{
+        val userList = mutableListOf<String>()
+        val db=readableDatabase
+        val query="SELECT $COLUMN_NAME FROM $DATA_TABEL"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val user=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+            userList.add(user)
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
+//use in kotlin file
+val userList = db.getallusername()
+        val adapter = ArrayAdapter(this, R.layout.simple_spinner_item, userList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        binding.spi1.adapter = adapter
+        binding.spi1.onItemSelectedListener=object :AdapterView.OnItemSelectedListener{
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                val selectuser=parent?.getItemAtPosition(position).toString()
+                Toast.makeText(this@addition,"Selected User : $selectuser",Toast.LENGTH_LONG).show()
+            }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) {
+                TODO("Not yet implemented")
+            }
+        }
