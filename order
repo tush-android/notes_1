@@ -1,0 +1,546 @@
+//layout for neworder
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".neworderdash">
+    <TextView
+        android:id="@+id/customerLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Customer"
+        android:textSize="24sp"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"/>
+
+    <Spinner
+        android:id="@+id/customerSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:background="@drawable/spinner_background"/>
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="8dp">
+        <ImageView
+            android:id="@+id/date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_calendar_month_24"/>
+        <TextView
+            android:id="@+id/textViewDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Today's Date"
+            android:layout_toRightOf="@id/date"
+            android:textSize="18sp"
+            android:paddingEnd="8dp"
+            android:paddingStart="8dp"/>
+
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/order"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="139dp"
+        android:layout_marginTop="0dp"
+        android:gravity="center"
+        android:text="Order Item"
+        android:textSize="18sp" />
+
+    <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <TableLayout
+                android:id="@+id/tablemenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:stretchColumns="1">
+              <!--  <TableRow>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="ITEM Name"
+                        android:textStyle="bold"
+                        android:textSize="18dp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:text="QUANTITY"
+                        android:textSize="18dp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="PRICE(₹)"
+                        android:textStyle="bold"
+                        android:layout_gravity="end"
+                        android:textSize="18dp"/>
+                </TableRow>-->
+
+                <!--<ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="329dp">
+                 <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/item_name"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="16sp" />
+
+                        <ImageButton
+                            android:id="@+id/decrease_button"
+                            android:layout_width="30dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/minus2"
+                            android:layout_marginStart="58dp"/>
+
+                        <EditText
+                            android:id="@+id/quantity_edit_text"
+                            android:layout_width="50dp"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textAlignment="center" />
+
+                        <ImageButton
+                            android:id="@+id/increase_button"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/plus" />
+                        <TextView
+                            android:id="@+id/item_price"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="16sp" />
+
+                        <TextView
+                            android:id="@+id/total_price"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+                </ScrollView>-->
+             <!--   <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="329dp">
+
+
+                    <TableLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:orientation="vertical">
+
+
+                        <TableRow
+                            android:layout_width="391dp"
+                            android:layout_height="match_parent"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:padding="8dp">
+
+
+                            <TextView
+                                android:id="@+id/item_name"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:ellipsize="end"
+                                android:maxLines="1"
+                                android:paddingEnd="8dp"
+                                android:text="Item Name"
+                                android:textSize="16sp" />
+                            <ImageButton
+                                android:id="@+id/decrease_button"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/minus2" />
+                            <EditText
+                                android:id="@+id/quantity_edit_text"
+                                android:layout_width="60dp"
+                                android:layout_height="wrap_content"
+                                android:inputType="number"
+                                android:text="1"
+                                android:textAlignment="center" />
+                            <ImageButton
+                                android:id="@+id/increase_button"
+                                android:layout_width="40dp"
+                                android:layout_height="40dp"
+                                android:layout_marginStart="8dp"
+                                android:src="@drawable/plus" />
+                            <TextView
+                                android:id="@+id/item_price"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="end"
+                                android:paddingEnd="8dp"
+                                android:text="Item Price"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:id="@+id/total_price"
+                                android:layout_width="57dp"
+                                android:layout_height="wrap_content"
+                                android:gravity="end"
+                                android:text="Total Price"
+                                android:textSize="16sp" />
+                        </TableRow>
+                    </TableLayout>
+                </ScrollView>-->
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="329dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="10dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp"
+                                android:textColor="@color/black"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:text="Item Name" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp"
+                                android:textColor="@color/black"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:text="Quantity" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp"
+                                android:textColor="@color/black"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:text="Price" />
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp"
+                                android:textColor="@color/black"
+                                android:textStyle="bold"
+                                android:gravity="center"
+                                android:text="Total Price" />
+                        </LinearLayout>
+                       <!-- <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="10dp">
+                            <TextView
+                                android:id="@+id/item_name"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp" />
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="horizontal">
+                                <ImageButton
+                                    android:id="@+id/decrease_button"
+                                    android:layout_width="30dp"
+                                    android:layout_height="28dp"
+                                    android:src="@drawable/minus2" />
+                                <EditText
+                                    android:id="@+id/quantity_edit_text"
+                                    android:layout_width="50dp"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:textAlignment="center" />
+                                <ImageButton
+                                    android:id="@+id/increase_button"
+                                    android:layout_width="30dp"
+                                    android:layout_height="30dp"
+                                    android:src="@drawable/plus" />
+                            </LinearLayout>
+                            <TextView
+                                android:id="@+id/item_price"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp" />
+                            <TextView
+                                android:id="@+id/total_price"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:textSize="16sp" />
+                        </LinearLayout>-->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recycler_view"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent" />
+                    </LinearLayout>
+                </ScrollView>
+            </TableLayout>
+        </LinearLayout>
+</LinearLayout>
+
+
+2.///order_list for OrderAdapter
+<?xml version="1.0" encoding="utf-8"?>
+<!--<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+</androidx.constraintlayout.widget.ConstraintLayout>-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="10dp">
+
+    <TextView
+        android:id="@+id/item_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="36dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="horizontal">
+
+        <ImageButton
+            android:id="@+id/decrease_button"
+            android:layout_width="30dp"
+            android:layout_height="28dp"
+            android:src="@drawable/minus2" />
+
+        <EditText
+            android:id="@+id/quantity_edit_text"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:textAlignment="center" />
+
+        <ImageButton
+            android:id="@+id/increase_button"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:src="@drawable/plus" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/item_price"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="16sp"
+        android:gravity="center" />
+
+    <TextView
+        android:id="@+id/total_price"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:textSize="16sp" />
+
+</LinearLayout>
+
+
+3.///for OrderAdapter
+package com.example.bsc_p6
+
+import android.content.Context
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.ViewHolder
+
+class orderAdapter(private val context:Context,private val itemList:List<Items>):RecyclerView.Adapter<orderAdapter.ViewHolder>() {
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): orderAdapter.ViewHolder {
+        val view=LayoutInflater.from(context).inflate(R.layout.order_list,parent,false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: orderAdapter.ViewHolder, position: Int) {
+       val item=itemList[position]
+        holder.itemNameTextView.text = item.ina
+        holder.itemPriceTextView.text = item.itp
+        holder.quantityEditText.setText("0")
+
+
+
+      /*  holder.decreaseButton.setOnClickListener {
+            var quantity = holder.quantityEditText.text.toString().toInt()
+            if (quantity > 0) {
+                quantity--
+                holder.quantityEditText.setText(quantity.toString())
+                val totalPrice = quantity * item.itp.toInt()
+                holder.totalPriceTextView.text = totalPrice.toString()
+            }
+        }
+
+        holder.increaseButton.setOnClickListener {
+            var quantity = holder.quantityEditText.text.toString().toInt()
+            quantity++
+            holder.quantityEditText.setText(quantity.toString())
+            val totalPrice = quantity * item.itp.toInt()
+            holder.totalPriceTextView.text = totalPrice.toString()
+        }*/
+        holder.quantityEditText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (s?.toString() != "") {
+                    val quantity = s.toString().toInt()
+                    val totalPrice = quantity * item.itp.toInt()
+                    holder.totalPriceTextView.text = totalPrice.toString()
+                } else {
+                    holder.totalPriceTextView.text = "0"
+                }
+            }
+
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        holder.decreaseButton.setOnClickListener {
+            var quantity = if (holder.quantityEditText.text.toString() == "") 0 else holder.quantityEditText.text.toString().toInt()
+            if (quantity > 0) {
+                quantity--
+                holder.quantityEditText.setText(quantity.toString())
+            }
+        }
+
+        holder.increaseButton.setOnClickListener {
+            var quantity = if (holder.quantityEditText.text.toString() == "") 0 else holder.quantityEditText.text.toString().toInt()
+            quantity++
+            holder.quantityEditText.setText(quantity.toString())
+        }
+    }
+
+    override fun getItemCount(): Int=itemList.size
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val itemNameTextView: TextView = view.findViewById(R.id.item_name)
+        val itemPriceTextView: TextView = view.findViewById(R.id.item_price)
+        val quantityEditText: EditText = view.findViewById(R.id.quantity_edit_text)
+        val decreaseButton: ImageButton = view.findViewById(R.id.decrease_button)
+        val increaseButton: ImageButton = view.findViewById(R.id.increase_button)
+        val totalPriceTextView: TextView = view.findViewById(R.id.total_price)
+    }
+}
+
+4.///for new orderdash 
+package com.example.bsc_p6
+
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import android.os.Bundle
+import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.bsc_p6.databinding.ActivityNeworderdashBinding
+import java.util.Calendar
+
+
+class neworderdash : AppCompatActivity() {
+    private lateinit var binding:ActivityNeworderdashBinding
+    private lateinit var textViewDate: TextView
+    private lateinit var db:DbHelper
+    private lateinit var Orderadapter:orderAdapter
+    private lateinit var recycle:RecyclerView
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding=ActivityNeworderdashBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        textViewDate = findViewById(R.id.textViewDate)
+        val calendar = Calendar.getInstance()
+        val todayYear = calendar.get(Calendar.YEAR)
+        val todayMonth = calendar.get(Calendar.MONTH) + 1 // Months are 0-indexed
+        val todayDay = calendar.get(Calendar.DAY_OF_MONTH)
+
+        textViewDate.text = getString(R.string.date_display_format, todayDay, todayMonth, todayYear)
+        db=DbHelper(this@neworderdash)
+        //val menuItems=db.getallitems()
+        /*val tl=binding.tablemenu
+        for(i in menuItems){
+            val tableRow=TableRow(this@neworderdash)
+            val itemNameTextView=TextView(this@neworderdash)
+            itemNameTextView.text=i.ina
+            tableRow.addView(itemNameTextView)
+            tl.addView(tableRow)
+        }*/
+       /* val tableLayout = findViewById<TableLayout>(R.id.tablemenu)
+        for (menuItem in menuItems) {
+            val tableRow = TableRow(this)
+            tableRow.layoutParams = TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+            )
+
+            // Item Name
+            val itemNameTextView = TextView(this)
+            itemNameTextView.text = menuItem.ina
+            itemNameTextView.setPadding(8, 8, 8, 8)
+            tableRow.addView(itemNameTextView)
+
+            // Quantity Controls (LinearLayout with -, EditText, +)
+            val quantityLayout = LinearLayout(this)
+            quantityLayout.orientation = LinearLayout.HORIZONTAL
+            quantityLayout.setPadding(8, 8, 8, 8)
+
+            // Price TextView
+            val priceTextView = TextView(this)
+            priceTextView.text = "₹0"
+            priceTextView.setPadding(8, 8, 8, 8)
+            tableRow.addView(priceTextView)
+
+            // Add the row to the table
+            tableLayout.addView(tableRow)
+        }*/
+        val itemList = db.getallitems()
+        recycle=findViewById(R.id.recycler_view)
+        Orderadapter=orderAdapter(this@neworderdash,itemList)
+        recycle.adapter=Orderadapter
+        recycle.layoutManager=LinearLayoutManager(this@neworderdash)
+    }
+}
