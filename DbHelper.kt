@@ -5,7 +5,11 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
+import androidx.core.content.contentValuesOf
 import com.example.bsc_p6.Dbitem.Companion
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DATABASE_VERSION) {
     companion object{
@@ -20,7 +24,16 @@ class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DA
         private const val ITEM_ID="id"
         private const val ITEM_NAME="itemname"
         private const val ITEM_PRICE="itemprice"
-
+        private const val TABLE_NAME3="teaorder"
+        private const val OID="id"
+        private const val OR_BY="order_by"
+        private const val I_Na="item_name"
+        private const val Q_it="item_quantity"
+        private const val I_pi="item_price"
+        private const val total="total"
+        private const val total_price="total_price"
+        private const val dateone="dateone"
+        private const val yesorno="Y"
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
@@ -44,15 +57,20 @@ class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DA
             )
         """
         db?.execSQL(createItemTableQuery)
-        //db?.execSQL(createItemTableQuery)
+        val createorderTab= """
+            CREATE TABLE $TABLE_NAME3($OID INTEGER PRIMARY KEY AUTOINCREMENT,$OR_BY TEXT,$I_Na TEXT,$I_pi REAL,$Q_it REAL,$total REAL,$total_price REAL,$dateone DEFAULT CURRENT_TIMESTAMP,$yesorno TEXT DEFAULT 'Y'
+        """.trimIndent()
+        db?.execSQL(createorderTab)
     }
 
     override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
         val dropUserTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME1"
-       //val dropItemTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME2"
+       val dropItemTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME2"
+        val droporder="DROP TABLE IF EXISTS $TABLE_NAME3"
 
         db?.execSQL(dropUserTableQuery)
-        //db?.execSQL(dropItemTableQuery)
+        db?.execSQL(dropItemTableQuery)
+        db?.execSQL(droporder)
         onCreate(db)
     }
     fun insertuser(user:customer){
@@ -116,6 +134,20 @@ class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DA
         db.delete(TABLE_NAME1,whereClause,whereargs)
         db.close()
     }
+    fun getallusername():List<String>{
+        val userList = mutableListOf<String>()
+        userList.add("---Select User---")
+        val db=readableDatabase
+        val query="SELECT $COLUMN_NAME FROM $TABLE_NAME1"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val user=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+            userList.add(user)
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
   fun additem(item:Items){
         val db=writableDatabase
         val values= ContentValues().apply {
@@ -142,5 +174,25 @@ class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DA
         db.close()
         return itlist
     }
+    val currentDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
+        Date()
+    )
+    val status="Y"
     //data class MenuItem(val id: Int, val name: String, val price: String)
+    fun addOrder(ord:orders){
+        val db=writableDatabase
+        val values= ContentValues().apply {
+            put(OID,ord.id)
+            put(OR_BY,ord.oby)
+            put(I_Na,ord.oitname)
+            put(I_pi,ord.oip)
+            put(Q_it,ord.qun)
+            put(total,ord.Total)
+            put(dateone,ord.date)
+            put(status,ord.status)
+            put(total_price,ord.finaltotal)
+        }
+        db.insert(TABLE_NAME3,null,values)
+        db.close()
+    }
 }
