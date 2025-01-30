@@ -1,0 +1,87 @@
+///delete
+  holder.delete.setOnClickListener {
+            if(bills.baki > 0){
+                Toast.makeText(holder.itemView.context,"This Bill Not Delete Due To Remaining Amount is Not Paid",Toast.LENGTH_LONG).show()
+            }
+            else
+            {
+                val builder= AlertDialog.Builder(holder.itemView.context)
+                builder.setTitle("ALERT....!")
+                builder.setMessage("Are You Sure You Want To Delete This Order?")
+                builder.setIcon(android.R.drawable.ic_dialog_alert)
+                builder.setPositiveButton("Yes"){dialogInterface , which ->
+                    db.deletebill(bills.id)
+                    //refreshData(db.getbills())
+                    Toast.makeText(holder.itemView.context,"Bill Deleted...!",Toast.LENGTH_SHORT).show()
+                   // removeOrderAt(position)
+                }
+                builder.setNegativeButton("No"){ dialogInterface,which->
+                    Toast.makeText(holder.itemView.context,"Bill Not Deleted...!",Toast.LENGTH_SHORT).show()
+                }
+                val alertDialog: AlertDialog =builder.create()
+                alertDialog.setCancelable(true)
+                alertDialog.show()
+            }
+        }
+///view Pdf
+ holder.view.setOnClickListener {
+            val pdfData = db.getPdfByBillId(bills.id)
+            if (pdfData != null) {
+                val pdfFile = File(holder.itemView.context.getExternalFilesDir(null), "temp_bill.pdf")
+                pdfFile.writeBytes(pdfData)
+               /* val intent=Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(pdfFile.toUri(),"application/pdf")
+                intent.flags=Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                try {
+                    holder.itemView.context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(holder.itemView.context, "No PDF Viewer found.", Toast.LENGTH_SHORT).show()
+                }*/
+                val intent=Intent(holder.itemView.context,viewPdf::class.java).apply {
+                    putExtra("billid",pdfFile.absolutePath)
+                }
+                holder.itemView.context.startActivity(intent)
+            }
+            else {
+                Toast.makeText(holder.itemView.context, "No PDF found for this bill.", Toast.LENGTH_SHORT).show()
+            }
+        }
+1111=>insert pdf with data
+fun inserthis(hist:bills, pdfData: ByteArray){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(cusname,hist.name)
+            put(bdate,hist.date)
+            put(pay,hist.pay)
+            put(paid,hist.paid)
+            put(baki,hist.baki)
+            put("bills", pdfData)
+        }
+        db.insert(TABLE_NAME5,null,values)
+        db.close()
+    }
+222=>get bill by id=> fun getPdfByBillId(billid: Int): ByteArray? {
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_NAME5 WHERE $hid=?"
+        val cursor = db.rawQuery(query, arrayOf(billid.toString()))
+        var pdfData: ByteArray? = null
+        if (cursor.moveToFirst()) {
+            pdfData = cursor.getBlob(cursor.getColumnIndexOrThrow(bill))
+        }
+        cursor.close()
+        db.close()
+        return pdfData
+    }
+=>>>inser pdf into data table History
+ binding.do1.setOnClickListener {
+            generatePDF()
+            val selectedUser = binding.cusspinnerone.selectedItem.toString()
+            val start = startDateTextView.text.toString()
+            val end = endDateTextView.text.toString()
+            val mix="$start"+" "+"to"+" "+"$end"
+            val toatall= binding.payable.text.toString()
+            val pdfFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "$selectedUser+$start to $end.pdf")
+            val pdfData = fileToByteArray(pdfFile)
+            db.updateStatusByUsernameAnddate(selectedUser,start,end)
+            val b=bills(0,selectedUser,mix,toatall.toDouble(),0.0,toatall.toDouble())
+            db.inserthis(b,pdfData)
