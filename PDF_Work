@@ -1,0 +1,191 @@
+///import library
+=======>implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+=======>Bill Adapter=>package com.example.three_three_four
+
+import android.content.Context
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
+import androidx.recyclerview.widget.RecyclerView
+import java.io.File
+
+class billAdapter(private var bi:List<bills>,context: Context):RecyclerView.Adapter<billAdapter.ViewHolder>() {
+    private val db:DbHelper= DbHelper(context)
+    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
+        val nameone:TextView=itemView.findViewById(R.id.dateoforder2)
+        val between:TextView=itemView.findViewById(R.id.between)
+        val amount:TextView=itemView.findViewById(R.id.amount)
+        val paidamount:TextView=itemView.findViewById(R.id.paidamount)
+        val remaining:TextView=itemView.findViewById(R.id.remaining)
+        val upd:ImageView=itemView.findViewById(R.id.up4)
+        val delete: ImageView =itemView.findViewById(R.id.de4)
+        val view:Button=itemView.findViewById(R.id.vipdf)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view= LayoutInflater.from(parent.context).inflate(R.layout.bill_his,parent,false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val bills=bi[position]
+        holder.nameone.text=bills.name
+        holder.between.text=bills.date
+        holder.amount.text=bills.pay.toString()
+        holder.paidamount.text=bills.paid.toString()
+        holder.remaining.text=bills.baki.toString()
+        holder.upd.setOnClickListener {
+            val intent=Intent(holder.itemView.context,billupdate::class.java).apply {
+                putExtra("billid",bills.id)
+            }
+            holder.itemView.context.startActivity(intent)
+        }
+        holder.delete.setOnClickListener {
+            if(bills.baki > 0){
+                Toast.makeText(holder.itemView.context,"This Bill Not Delete Due To Remaining Amount is Not Paid",Toast.LENGTH_LONG).show()
+            }
+            else
+            {
+                val builder= AlertDialog.Builder(holder.itemView.context)
+                builder.setTitle("ALERT....!")
+                builder.setMessage("Are You Sure You Want To Delete This Order?")
+                builder.setIcon(android.R.drawable.ic_dialog_alert)
+                builder.setPositiveButton("Yes"){dialogInterface , which ->
+                    db.deletebill(bills.id)
+                    //refreshData(db.getbills())
+                    Toast.makeText(holder.itemView.context,"Bill Deleted...!",Toast.LENGTH_SHORT).show()
+                   // removeOrderAt(position)
+                }
+                builder.setNegativeButton("No"){ dialogInterface,which->
+                    Toast.makeText(holder.itemView.context,"Bill Not Deleted...!",Toast.LENGTH_SHORT).show()
+                }
+                val alertDialog: AlertDialog =builder.create()
+                alertDialog.setCancelable(true)
+                alertDialog.show()
+            }
+        }
+        holder.view.setOnClickListener {
+            val pdfData = db.getPdfByBillId(bills.id)
+            if (pdfData != null) {
+                val pdfFile = File(holder.itemView.context.getExternalFilesDir(null), "temp_bill.pdf")
+                pdfFile.writeBytes(pdfData)
+               /* val intent=Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(pdfFile.toUri(),"application/pdf")
+                intent.flags=Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                try {
+                    holder.itemView.context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(holder.itemView.context, "No PDF Viewer found.", Toast.LENGTH_SHORT).show()
+                }*/
+                val intent=Intent(holder.itemView.context,viewPdf::class.java).apply {
+                    putExtra("billid",pdfFile.absolutePath)
+                }
+                holder.itemView.context.startActivity(intent)
+            }
+            else {
+                Toast.makeText(holder.itemView.context, "No PDF found for this bill.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return bi.size
+    }
+    fun refreshData(newcus:List<bills>){
+        bi=newcus
+        notifyDataSetChanged()
+    }
+}
+
+================================================================================================> viewPdf.xml
+=====><?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".cusdash">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bill's"
+        android:textColor="@color/lavender"
+        android:textSize="30sp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:textStyle="bold"
+        />
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/bills1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="50dp"
+        android:padding="16dp"
+        />
+</RelativeLayout>
+===================================================================================================>viewPdf.kt
+package com.example.three_three_four
+
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.os.ParcelFileDescriptor
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.Toast
+import com.github.chrisbanes.photoview.PhotoView
+import java.io.File
+
+class viewPdf : AppCompatActivity() {
+    private lateinit var pdfImageView: PhotoView
+    private lateinit var shareButton: Button
+
+    private var pdfFile: File? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_view_pdf)
+
+        pdfImageView = findViewById(R.id.pdffhai)
+        shareButton = findViewById(R.id.shareButton)
+
+        val pdfPath = intent.getStringExtra("billid")
+        if (pdfPath != null) {
+            displayPDF(pdfPath)
+        } else {
+            Toast.makeText(this, "Error: No PDF file found.", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    private fun displayPDF(pdfPath: String) {
+        try {
+            val file = File(pdfPath)
+            val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            val pdfRenderer = PdfRenderer(fileDescriptor)
+            val page = pdfRenderer.openPage(0) // Open the first page
+
+            // Create bitmap to render PDF page
+            val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            pdfImageView.setImageBitmap(bitmap)
+            page.close()
+            pdfRenderer.close()
+            fileDescriptor.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Failed to load PDF", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
