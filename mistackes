@@ -1,0 +1,1059 @@
+==========================================>History(Kotlin)
+package com.example.three_three_four
+
+import android.app.DatePickerDialog
+import android.graphics.Paint
+import android.graphics.fonts.Font
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.os.Environment
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.RelativeLayout.ALIGN_RIGHT
+import android.widget.TextView
+import android.widget.Toast
+import androidx.compose.ui.text.android.LayoutCompat.ALIGN_RIGHT
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.three_three_four.databinding.ActivityHistoryBinding
+import com.itextpdf.text.Document
+import com.itextpdf.text.Element
+import com.itextpdf.text.Paragraph
+import com.itextpdf.text.Phrase
+import com.itextpdf.text.pdf.PdfDocument
+import com.itextpdf.text.pdf.PdfPCell
+import com.itextpdf.text.pdf.PdfPTable
+import com.itextpdf.text.pdf.PdfWriter
+import java.io.File
+import java.io.FileOutputStream
+import java.text.SimpleDateFormat
+import java.util.*
+
+class History : AppCompatActivity() {
+    lateinit var startDateTextView: TextView
+    lateinit var endDateTextView: TextView
+    private lateinit var binding: ActivityHistoryBinding
+    private lateinit var recyclerView1: RecyclerView
+    private lateinit var db: DbHelper
+    private lateinit var Ada: HisAdapter
+    private lateinit var Ada2: byuserAdapter
+
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        binding = ActivityHistoryBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        startDateTextView = findViewById(R.id.stattdate)
+        endDateTextView = findViewById(R.id.enddate)
+
+        db = DbHelper(this@History)
+        val userList = db.getallusername()
+        val adapter =
+            ArrayAdapter(this@History, android.R.layout.simple_spinner_item, userList)
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        //binding..adapter = adapter
+        binding.cusspinnerone.adapter = adapter
+        binding.pay.visibility=View.INVISIBLE
+        binding.payable.visibility=View.INVISIBLE
+        //binding.orderdetail1
+
+
+        val calendar = Calendar.getInstance()
+        calendar.set(Calendar.DAY_OF_MONTH, 1)
+        val startDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(calendar.time)
+        calendar.set(Calendar.DAY_OF_MONTH, calendar.getActualMaximum(Calendar.DAY_OF_MONTH))
+        val endDate = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault()).format(calendar.time)
+        startDateTextView.text = startDate
+        endDateTextView.text = endDate
+        //  displayOrders()
+
+
+        // Set OnClickListener for start date TextView
+        startDateTextView.setOnClickListener {
+            showDatePickerDialog { selectedDate ->
+                startDateTextView.text = selectedDate
+                //displayOrders()
+            }
+        }
+
+        // Set OnClickListener for end date TextView
+        endDateTextView.setOnClickListener {
+            showDatePickerDialog { selectedDate ->
+                endDateTextView.text = selectedDate
+                //displayOrders()
+            }
+            /*    binding.cusspinnerone.onItemClickListener=object :AdapterView.OnItemSelectedListener,
+                AdapterView.OnItemClickListener {
+                override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    displayOrders()
+                }
+
+                override fun onNothingSelected(p0: AdapterView<*>?) {
+                    TODO("Not yet implemented")
+                }
+
+                override fun onItemClick(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
+                    TODO("Not yet implemented")
+                }
+
+            }*/
+        }
+        binding.v1.setOnClickListener {
+            binding.pay.visibility=View.VISIBLE
+            binding.payable.visibility=View.VISIBLE
+            displayorders()
+
+        }
+        binding.do1.setOnClickListener {
+            generatePDF()
+            val selectedUser = binding.cusspinnerone.selectedItem.toString()
+            val start = startDateTextView.text.toString()
+            val end = endDateTextView.text.toString()
+            val mix="$start"+" "+"to"+" "+"$end"
+            val toatall= binding.payable.text.toString()
+            val pdfFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "$selectedUser+$start to $end.pdf")
+            val pdfData = fileToByteArray(pdfFile)
+            db.updateStatusByUsernameAnddate(selectedUser,start,end)
+            val b=bills(0,selectedUser,mix,toatall.toDouble(),0.0,toatall.toDouble())
+            db.inserthis(b,pdfData)
+            finish()
+            /*fun inserthis(hist:bills){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(cusname,hist.name)
+            put(pay,hist.pay)
+            put(paid,hist.paid)
+            put(baki,hist.baki)
+        }
+        db.insert(TABLE_NAME4,null,values)
+        db.close()*/
+        }
+
+
+    }
+
+
+    /* private fun displayOrders() {
+       /* val selecteduser = binding.cusspinnerone.selectedItem.toString()
+        val start = startDateTextView.text.toString()
+        val end = endDateTextView.text.toString()
+
+        if (selecteduser == "---Select User---") {
+            //val ordes=db.getByRange(start,end)
+            val ordes = db.getOrdersByDateRange(start, end)
+            Ada = HisAdapter(ordes, this@History)
+            binding.orderdetail1.layoutManager = LinearLayoutManager(this@History)
+            binding.orderdetail1.adapter = Ada
+            //Ada.setFilterParameter(start, end)
+            Toast.makeText(this, "Clickedd", Toast.LENGTH_LONG).show()
+        } else {
+            val ordes = db.getOrderByUsernameAnddate(selecteduser, start, end)
+            Ada2 = byuserAdapter(ordes, this@History)
+            binding.orderdetail1.layoutManager = LinearLayoutManager(this@History)
+            binding.orderdetail1.adapter = Ada2
+            Toast.makeText(this, "Clickedd Again", Toast.LENGTH_LONG).show()
+        }*/
+        displayorders()
+    }*/
+
+    private fun showDatePickerDialog(onDateSelected: (String) -> Unit) {
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
+
+        val datePickerDialog =
+            DatePickerDialog(this, { _, selectedYear, selectedMonth, selectedDay ->
+                // Format the selected date
+                val selectedDate =
+                    String.format("%02d-%02d-%04d", selectedDay, selectedMonth + 1, selectedYear)
+                onDateSelected(selectedDate)
+            }, year, month, day)
+
+        datePickerDialog.show()
+    }
+
+
+    fun displayorders() {
+        val selectedUser = binding.cusspinnerone.selectedItem.toString()
+        val start = startDateTextView.text.toString()
+        val end = endDateTextView.text.toString()
+
+        if (selectedUser == "---Select User---") {
+            val orders = db.getOrdersByDateRange(start, end)
+            if (::Ada.isInitialized) {
+                Ada.updateOrders(orders)
+            } else {
+                Ada = HisAdapter(orders, this@History)
+                binding.orderdetail1.layoutManager = LinearLayoutManager(this@History)
+                binding.orderdetail1.adapter = Ada
+                Ada.updateOrders(orders)
+            }
+            val totalAmount = Ada.getTotalAmount()
+            binding.payable.text=String.format("%.2f",totalAmount)
+        } else {
+            val orders = db.getOrderByUsernameAnddate(selectedUser, start, end)
+            if (::Ada2.isInitialized) {
+                Ada2.updateOrders(orders) // Update existing adapter
+            } else {
+                Ada2 = byuserAdapter(orders, this@History)
+                binding.orderdetail1.layoutManager = LinearLayoutManager(this@History)
+                binding.orderdetail1.adapter = Ada2
+            }
+            val totalAmount = Ada2.getTotalAmount()
+            binding.payable.text=String.format("%.2f",totalAmount)
+        }
+    }
+
+
+
+
+    private fun generatePDF() {
+        val selectedUser = binding.cusspinnerone.selectedItem.toString()
+        val startone = startDateTextView.text.toString()
+        val endone = endDateTextView.text.toString()
+
+        val orders = db.getOrderByUsernameAnddate(selectedUser, startone, endone)
+        val pdfFile = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "$selectedUser+$startone to $endone.pdf")
+        //val pdfData = fileToByteArray(pdfFile)
+        val document = Document()
+        val writer = PdfWriter.getInstance(document, FileOutputStream(pdfFile))
+        document.open()
+
+        val title = Paragraph("Order History for $selectedUser\nFrom $startone to $endone\n\n")
+        title.alignment = Element.ALIGN_CENTER
+        document.add(title)
+
+        val table = PdfPTable(6) // 6 columns: ID, Item Name, Price, Quantity, Total, Date
+        table.widthPercentage = 100f
+        table.setWidths(floatArrayOf(1f, 3f, 2f, 2f, 2f, 3f))
+
+        // Add table headers
+        val headers = arrayOf("Order ID", "Item Name", "Price", "Quantity", "Total", "Order Date")
+        headers.forEach { header ->
+            val cell = PdfPCell(Phrase(header))
+            cell.horizontalAlignment = Element.ALIGN_CENTER
+            table.addCell(cell)
+        }
+
+        // Process each order
+        for (order in orders) {
+            table.addCell(order.id.toString())
+            table.addCell(order.oitname)
+            table.addCell(order.oip)
+            table.addCell(order.qun)
+            table.addCell(order.Totala.toString())
+            table.addCell(order.date)
+        }
+
+        document.add(table)
+        document.close()
+
+        Toast.makeText(this, "PDF generated successfully: ${pdfFile.absolutePath}", Toast.LENGTH_LONG).show()
+    }
+
+    private fun fileToByteArray(pdfFile: File): ByteArray {
+        return pdfFile.readBytes()
+    }
+}
+
+
+    /*  private fun displayOrders(){
+          val selected=binding.cusspinnerone.selectedItem.toString()
+          if(selected == "---Select User---"){
+              val orders=db.getOrdersByDateRange(startDateTextView.text.toString(),endDateTextView.text.toString())
+              Ada=HisAdapter(orders)
+              recyclerView1.adapter=Ada
+          }
+          else {
+              val orders = db.getOrderByUsernameAnddate(
+                  selected,
+                  startDateTextView.text.toString(),
+                  endDateTextView.text.toString()
+              )
+              Ada = HisAdapter(orders)
+              recyclerView1.adapter = Ada
+          }
+      }*/
+
+
+/*class OrderViewAdapter(private val orders: List<orders>):RecyclerView.Adapter<OrderViewAdapter.ViewHolder>() {
+    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView) {
+        fun bind(order:orders){
+            val ordname:TextView=itemView.findViewById(R.id.cusnameone)
+            val dateon:TextView=itemView.findViewById(R.id.dateoforder)
+            val total1:TextView=itemView.findViewById(R.id.totalPri)
+        }
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view=LayoutInflater.from(parent.context).inflate(R.layout.or_tab,parent,false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val order=orders[position]
+        holder.bind(order)
+    }
+
+    override fun getItemCount(): Int {
+        return orders.size
+    }
+}*/
+============================================================================================>BillAdapter(Kotlin)
+package com.example.three_three_four
+
+import android.content.Context
+import android.content.Intent
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.net.toUri
+import androidx.recyclerview.widget.RecyclerView
+import java.io.File
+
+class billAdapter(private var bi:List<bills>,context: Context):RecyclerView.Adapter<billAdapter.ViewHolder>() {
+    private val db:DbHelper= DbHelper(context)
+    class ViewHolder(itemView: View):RecyclerView.ViewHolder(itemView){
+        val nameone:TextView=itemView.findViewById(R.id.dateoforder2)
+        val between:TextView=itemView.findViewById(R.id.between)
+        val amount:TextView=itemView.findViewById(R.id.amount)
+        val paidamount:TextView=itemView.findViewById(R.id.paidamount)
+        val remaining:TextView=itemView.findViewById(R.id.remaining)
+        val upd:ImageView=itemView.findViewById(R.id.up4)
+        val delete: ImageView =itemView.findViewById(R.id.de4)
+        val view:Button=itemView.findViewById(R.id.vipdf)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view= LayoutInflater.from(parent.context).inflate(R.layout.bill_his,parent,false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val bills=bi[position]
+        holder.nameone.text=bills.name
+        holder.between.text=bills.date
+        holder.amount.text=bills.pay.toString()
+        holder.paidamount.text=bills.paid.toString()
+        holder.remaining.text=bills.baki.toString()
+        holder.upd.setOnClickListener {
+            val intent=Intent(holder.itemView.context,billupdate::class.java).apply {
+                putExtra("billid",bills.id)
+            }
+            holder.itemView.context.startActivity(intent)
+        }
+        holder.delete.setOnClickListener {
+            if(bills.baki > 0){
+                Toast.makeText(holder.itemView.context,"This Bill Not Delete Due To Remaining Amount is Not Paid",Toast.LENGTH_LONG).show()
+            }
+            else
+            {
+                val builder= AlertDialog.Builder(holder.itemView.context)
+                builder.setTitle("ALERT....!")
+                builder.setMessage("Are You Sure You Want To Delete This Order?")
+                builder.setIcon(android.R.drawable.ic_dialog_alert)
+                builder.setPositiveButton("Yes"){dialogInterface , which ->
+                    db.deletebill(bills.id)
+                    //refreshData(db.getbills())
+                    Toast.makeText(holder.itemView.context,"Bill Deleted...!",Toast.LENGTH_SHORT).show()
+                   // removeOrderAt(position)
+                }
+                builder.setNegativeButton("No"){ dialogInterface,which->
+                    Toast.makeText(holder.itemView.context,"Bill Not Deleted...!",Toast.LENGTH_SHORT).show()
+                }
+                val alertDialog: AlertDialog =builder.create()
+                alertDialog.setCancelable(true)
+                alertDialog.show()
+            }
+        }
+        holder.view.setOnClickListener {
+            val pdfData = db.getPdfByBillId(bills.id)
+            if (pdfData != null) {
+                val pdfFile = File(holder.itemView.context.getExternalFilesDir(null), "temp_bill.pdf")
+                pdfFile.writeBytes(pdfData)
+               /* val intent=Intent(Intent.ACTION_VIEW)
+                intent.setDataAndType(pdfFile.toUri(),"application/pdf")
+                intent.flags=Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION
+                try {
+                    holder.itemView.context.startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(holder.itemView.context, "No PDF Viewer found.", Toast.LENGTH_SHORT).show()
+                }*/
+                val intent=Intent(holder.itemView.context,viewPdf::class.java).apply {
+                    putExtra("billid",pdfFile.absolutePath)
+                }
+                holder.itemView.context.startActivity(intent)
+            }
+            else {
+                Toast.makeText(holder.itemView.context, "No PDF found for this bill.", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun getItemCount(): Int {
+        return bi.size
+    }
+    fun refreshData(newcus:List<bills>){
+        bi=newcus
+        notifyDataSetChanged()
+    }
+
+}
+===================================================================================================>DBhelper
+package com.example.three_three_four
+
+import android.content.ContentValues
+import android.content.Context
+import android.database.Cursor
+import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+class DbHelper(context:Context):SQLiteOpenHelper(context, DATABASE_NAME,null, DATABASE_VERSION) {
+    companion object{
+        private const val DATABASE_NAME="teadb40"//tea12.db
+        private const val DATABASE_VERSION=1
+        private const val TABLE_NAME1="alluser"
+        private const val COLUMN_ID="id"
+        private const val COLUMN_NAME="name"
+        private const val COLUMN_MOBILE="mobile"
+        private const val COLOMN_ADDR="address"
+        private const val TABLE_NAME2="allitemdetails"
+        private const val ITEM_ID="id"
+        private const val ITEM_NAME="itemname"
+        private const val ITEM_PRICE="itemprice"
+        private const val TABLE_NAME3="teaorder"
+        private const val OID="id"
+        private const val OR_BY="order_by"
+        private const val I_Na="item_name"
+        private const val Q_it="item_quantity"
+        private const val I_pi="item_price"
+        private const val total1="total"
+        private const val total_price="total_price"
+        private const val dateone="dateone"
+        private const val yesorno="Y"
+        private const val TABLE_NAME5="billhis"
+        private const val hid="id"
+        private const val cusname="cus_name"
+        private const val bdate="betweendate"
+        private const val pay="payable_amount"
+        private const val paid="paid_amount"
+        private const val baki="baki_amount"
+        private const val bill="bills"
+    }
+
+    override fun onCreate(db: SQLiteDatabase?) {
+        // Create User Table
+        val createUserTableQuery = """
+        CREATE TABLE $TABLE_NAME1 (
+            $COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $COLUMN_NAME TEXT,
+            $COLUMN_MOBILE TEXT,
+            $COLOMN_ADDR TEXT
+        )
+    """
+        db?.execSQL(createUserTableQuery)
+
+        // Create Item Table
+        val createItemTableQuery = """
+        CREATE TABLE $TABLE_NAME2 (
+            $ITEM_ID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $ITEM_NAME TEXT,
+            $ITEM_PRICE REAL
+        )
+    """
+        db?.execSQL(createItemTableQuery)
+
+        // Create Order Table
+        /*val createOrderTableQuery = """
+        CREATE TABLE $TABLE_NAME3 (
+            $OID INTEGER PRIMARY KEY AUTOINCREMENT,
+            $OR_BY TEXT,
+            $I_Na TEXT,
+            $I_pi REAL,
+            $Q_it REAL,
+            $total REAL,
+            $total_price REAL,
+            $dateone TEXT,
+            $yesorno TEXT
+        )
+    """
+        db?.execSQL(createOrderTableQuery)*/
+        val createorderTab= "CREATE TABLE $TABLE_NAME3($OID INTEGER PRIMARY KEY AUTOINCREMENT,$OR_BY TEXT,$I_Na TEXT,$I_pi REAL,$Q_it INTEGER,$total1 REAL,$total_price REAL,$dateone TEXT,$yesorno TEXT)"
+        db?.execSQL(createorderTab)
+        val createhistable="CREATE TABLE $TABLE_NAME5($hid INTEGER PRIMARY KEY AUTOINCREMENT,$cusname TEXT,$bdate TEXT,$pay REAL,$paid REAL,$baki REAL,$bill BLOB)"
+        db?.execSQL(createhistable)
+
+    }
+
+
+    override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
+        val dropUserTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME1"
+       val dropItemTableQuery = "DROP TABLE IF EXISTS $TABLE_NAME2"
+        val droporder="DROP TABLE IF EXISTS $TABLE_NAME3"
+        val droaphistory="DROP TABLE IF EXISTS $TABLE_NAME5"
+
+        db?.execSQL(dropUserTableQuery)
+        db?.execSQL(dropItemTableQuery)
+        db?.execSQL(droporder)
+        db?.execSQL(droaphistory)
+        onCreate(db)
+    }
+    fun insertuser(user:customer){
+        val db=writableDatabase
+        val values= ContentValues().apply {
+            put(COLUMN_NAME,user.name)
+            put(COLUMN_MOBILE,user.mob)
+            put(COLOMN_ADDR,user.addr)
+        }
+        db.insert(TABLE_NAME1,null,values)
+        db.close()
+    }
+    fun getAllUser():List<customer>
+    {
+        val custlist= mutableListOf<customer>()
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME1"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val id=cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val name=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+            val mob=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MOBILE))
+            val addr=cursor.getString(cursor.getColumnIndexOrThrow(COLOMN_ADDR))
+
+            val cus=customer(id,name,mob,addr)
+            custlist.add(cus)
+        }
+        cursor.close()
+        db.close()
+        return custlist
+    }
+    fun update(cus:customer){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(COLUMN_NAME,cus.name)
+            put(COLUMN_MOBILE,cus.mob)
+            put(COLOMN_ADDR,cus.addr)
+        }
+        val whereclause="$COLUMN_ID=?"
+        val whereargs= arrayOf(cus.id.toString())
+        db.update(TABLE_NAME1,values,whereclause,whereargs)
+        db.close()
+    }
+    fun getuserbyId(userid:Int):customer{
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME1 WHERE $COLUMN_ID=$userid"
+        val cursor=db.rawQuery(query,null)
+        cursor.moveToFirst()
+        val id=cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+        val cname=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+        val cmob=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MOBILE))
+        val caddr=cursor.getString(cursor.getColumnIndexOrThrow(COLOMN_ADDR))
+        cursor.close()
+        db.close()
+        return customer(id,cname,cmob,caddr)
+    }
+    fun deleteuser(userid:Int){
+        val db=writableDatabase
+        val whereClause="$COLUMN_ID = ?"
+        val whereargs= arrayOf(userid.toString())
+        db.delete(TABLE_NAME1,whereClause,whereargs)
+        db.close()
+    }
+    fun getallusername():List<String>{
+        val userList = mutableListOf<String>()
+        userList.add("---Select User---")
+        val db=readableDatabase
+        val query="SELECT $COLUMN_NAME FROM $TABLE_NAME1"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val user=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+            userList.add(user)
+        }
+        cursor.close()
+        db.close()
+        return userList
+    }
+  fun additem(item:Items){
+        val db=writableDatabase
+        val values= ContentValues().apply {
+            put(ITEM_NAME,item.ina)
+            put(ITEM_PRICE,item.itp)
+        }
+        db.insert(TABLE_NAME2,null,values)
+        db.close()
+    }
+    fun getallitems():List<Items>{
+        val itlist= mutableListOf<Items>()
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME2"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val id=cursor.getInt(cursor.getColumnIndexOrThrow(ITEM_ID))
+            val n=cursor.getString(cursor.getColumnIndexOrThrow(ITEM_NAME))
+            val p=cursor.getString(cursor.getColumnIndexOrThrow(ITEM_PRICE))
+
+            val i=Items(id,n,p)
+            itlist.add(i)
+        }
+        cursor.close()
+        db.close()
+        return itlist
+    }
+    val currentDateTime = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(
+        Date()
+    )
+    //val status="Y"
+    //data class MenuItem(val id: Int, val name: String, val price: String)
+    fun addOrder(ord: orders){
+        val db=writableDatabase
+        val values= ContentValues().apply {
+            put(OID,ord.id)
+            put(OR_BY,ord.oby)
+            put(I_Na,ord.oitname)
+            put(I_pi,ord.oip)
+            put(Q_it,ord.qun)
+            put(total1,ord.Total)
+            put(dateone,ord.date)
+            put(yesorno,ord.status)
+        }
+        db.insert(TABLE_NAME3,null,values)
+        db.close()
+    }
+    fun insertOrder(
+        username:String,
+        date:String,
+        itemName:String,
+        itemPrice: String,
+        qty: String,
+        total2:Double,
+        finalTotal: Double,
+        status:String){
+        val db=writableDatabase
+        val values=ContentValues()
+        values.put(OR_BY,username)
+        values.put(I_Na,itemName)
+        values.put(I_pi,itemPrice)
+        values.put(Q_it,qty)
+        values.put(total1,total2)
+        values.put(dateone,date)
+        values.put(total_price,finalTotal)
+        values.put(yesorno,status)
+        db.insert(TABLE_NAME3,null,values)
+        db.close()
+    }
+    ///SELECT * FROM teaorder WHERE dateone BETWEEN '01/01/2025' AND '09/01/2025' AND Y='N'
+    //SELECT * FROM teaorder WHERE dateone BETWEEN '01/01/2025' AND '09/01/2025' AND Y='Y'AND order_by='testing 93'
+
+    fun getOrdersByDateRange(startDate: String, endDate: String):List<ordersone>{
+        val ordersone= mutableListOf<ordersone>()
+        val db=readableDatabase
+       val formattedStartDate = convertToDatabaseFormat(startDate)
+        val formattedEndDate = convertToDatabaseFormat(endDate)
+       /* val cursor:Cursor=db.rawQuery("SELECT * FROM $TABLE_NAME3 WHERE $dateone BETWEEN ? AND ? AND $yesorno='Y'",
+            arrayOf(startDate,endDate)
+        )*/
+        val cursor:Cursor=db.rawQuery("SELECT * FROM $TABLE_NAME3 WHERE strftime('%Y-%m-%d', substr($dateone, 7, 4) || '-' || substr($dateone, 4, 2) || '-' || substr($dateone, 1, 2)) BETWEEN ? AND ? AND $yesorno='Y'",
+        arrayOf(formattedStartDate,formattedEndDate)
+        )
+        while(cursor.moveToNext()){
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+                val oby = cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+            val itemname=cursor.getString(cursor.getColumnIndexOrThrow(I_Na))
+            val itemprice=cursor.getString(cursor.getColumnIndexOrThrow(I_pi))
+            val qty=cursor.getString(cursor.getColumnIndexOrThrow(Q_it))
+                val Total = cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+                val finalp =cursor.getDouble(cursor.getColumnIndexOrThrow(total_price))
+                val date = cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+                val status = cursor.getString(cursor.getColumnIndexOrThrow(yesorno))
+            val oda=ordersone(id,oby,itemname,itemprice,qty,Total,finalp,date,status)
+            ordersone.add(oda)
+        }
+        cursor.close()
+        db.close()
+        return ordersone
+    }
+
+    private fun convertToDatabaseFormat(date: String): String {
+        val parts=date.split("-")
+        return  "${parts[2]}-${parts[1]}-${parts[0]}"
+    }
+
+
+    fun getByRange(st:String,en:String):List<historyfor>{
+       val his= mutableListOf<historyfor>()
+        val db=readableDatabase
+        
+        val cursor:Cursor=db.rawQuery("SELECT * FROM $TABLE_NAME3 WHERE $dateone BETWEEN ? AND ? AND $yesorno='Y'",
+            arrayOf(st,en)
+        )
+        while(cursor.moveToNext()){
+          val id=cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+            val name=cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+            val dateo=cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+            val totall=cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+
+            val cuus=historyfor(id,name,dateo,totall)
+            his.add(cuus)
+        }
+        cursor.close()
+        db.close()
+        return his
+    }
+    fun getOrderByUsernameAnddate(username:String,startDate:String,endDate:String):List<ordersone>{
+        val ordertwo= mutableListOf<ordersone>()
+        val db=readableDatabase
+        val formattedStartDate = convertToDatabaseFormat(startDate)
+        val formattedEndDate = convertToDatabaseFormat(endDate)
+        val cursor:Cursor=db.rawQuery("SELECT * FROM $TABLE_NAME3 WHERE strftime('%Y-%m-%d', substr($dateone, 7, 4) || '-' || substr($dateone, 4, 2) || '-' || substr($dateone, 1, 2)) BETWEEN ? AND ? AND $yesorno='Y' AND $OR_BY=?",
+            arrayOf(formattedStartDate,formattedEndDate,username)
+        )
+        while(cursor.moveToNext()){
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+            val oby = cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+            val itemname=cursor.getString(cursor.getColumnIndexOrThrow(I_Na))
+            val itemprice=cursor.getString(cursor.getColumnIndexOrThrow(I_pi))
+            val qty=cursor.getString(cursor.getColumnIndexOrThrow(Q_it))
+            val Total = cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+            val finalp =cursor.getDouble(cursor.getColumnIndexOrThrow(total_price))
+            val date = cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+            val status = cursor.getString(cursor.getColumnIndexOrThrow(yesorno))
+            val oda=ordersone(id,oby,itemname,itemprice,qty,Total,finalp,date,status)
+            ordertwo.add(oda)
+        }
+        cursor.close()
+        db.close()
+        return ordertwo
+    }
+    fun updateStatusByUsernameAnddate(username:String,startDate:String,endDate:String){
+        val db=writableDatabase
+        val formattedStartDate = convertToDatabaseFormat(startDate)
+        val formattedEndDate = convertToDatabaseFormat(endDate)
+        /*db.execSQL("UPDATE $TABLE_NAME3 SET $yesorno='N' WHERE strftime('%Y-%m-%d', substr($dateone, 7, 4) || '-' || substr($dateone, 4, 2) || '-' || substr($dateone, 1, 2)) BETWEEN ? AND ? AND $yesorno='Y' AND $OR_BY=?",
+            arrayOf(formattedStartDate,formattedEndDate,username)
+        )
+        db.close()*/
+        val contentValues = ContentValues()
+        contentValues.put(yesorno, "N")
+        db.update(TABLE_NAME3, contentValues, "strftime('%Y-%m-%d', substr($dateone, 7, 4) || '-' || substr($dateone, 4, 2) || '-' || substr($dateone, 1, 2)) BETWEEN ? AND ? AND $yesorno='Y' AND $OR_BY=?",
+            arrayOf(formattedStartDate,formattedEndDate,username)
+        )
+        db.close()
+    }
+    /*fun getOrderbyId(orderid:Int):ordersone{
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME3 WHERE $OID=$orderid"
+        val cursor=db.rawQuery(query,null)
+        cursor.moveToFirst()
+        val id=cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+        val orderby=cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+        val itemname=cursor.getString(cursor.getColumnIndexOrThrow(ITEM_NAME))
+        val itemprice=cursor.getString(cursor.getColumnIndexOrThrow(I_pi))
+        val qty=cursor.getString(cursor.getColumnIndexOrThrow(Q_it))
+        val totl=cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+        val gto=cursor.getDouble(cursor.getColumnIndexOrThrow(total_price))
+        val date=cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+        val status=cursor.getString(cursor.getColumnIndexOrThrow(yesorno))
+        cursor.close()
+        db.close()
+        return ordersone(id,orderby,itemname,itemprice,qty,totl,gto,date,status)
+    }*/
+    fun getOrderbi(orderid:Int):ordersone{
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME3 WHERE $OID=?"
+        val cursor=db.rawQuery(query,arrayOf(orderid.toString()))
+        cursor.moveToFirst()
+        /*val id=cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+        val orderby=cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+        val totl=cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+        val date=cursor.getString(cursor.getColumnIndexOrThrow(dateone))*/
+        val id=cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+        val orderby=cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+        val itemname=cursor.getString(cursor.getColumnIndexOrThrow(I_Na))
+        val itemprice=cursor.getString(cursor.getColumnIndexOrThrow(I_pi))
+        val qty=cursor.getString(cursor.getColumnIndexOrThrow(Q_it))
+        val totl=cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+        val gto=cursor.getDouble(cursor.getColumnIndexOrThrow(total_price))
+        val date=cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+        val status=cursor.getString(cursor.getColumnIndexOrThrow(yesorno))
+
+        //remove comma
+        cursor.close()
+        db.close()
+        return ordersone(id,orderby,itemname,itemprice,qty,totl,gto,date,status)
+    }
+    fun updateorder(ou:ordersone){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(OR_BY,ou.name)
+            put(I_Na,ou.oitname)
+            put(I_pi,ou.oip)
+            put(Q_it,ou.qun)
+            put(total1,ou.Totala)
+            put(total_price,ou.finalp)
+            put(dateone,ou.date)
+            put(yesorno,ou.status)
+        }
+        val whereclause="$OID=?"
+        val whereargs= arrayOf(ou.id.toString())
+        db.update(TABLE_NAME3,values,whereclause,whereargs)
+        db.close()
+    }
+    fun deleteorder(orderid:Int){
+        val db=writableDatabase
+        val whereClause="$OID=?"
+        val whereargs= arrayOf(orderid.toString())
+        db.delete(TABLE_NAME3,whereClause,whereargs)
+        db.close()
+    }
+    fun inserthis(hist:bills, pdfData: ByteArray){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(cusname,hist.name)
+            put(bdate,hist.date)
+            put(pay,hist.pay)
+            put(paid,hist.paid)
+            put(baki,hist.baki)
+            put("bills", pdfData)
+        }
+        db.insert(TABLE_NAME5,null,values)
+        db.close()
+    }
+    fun getbills():List<bills>{
+        val billlist= mutableListOf<bills>()
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME5"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val id=cursor.getInt(cursor.getColumnIndexOrThrow(hid))
+            val name=cursor.getString(cursor.getColumnIndexOrThrow(cusname))
+            val bdate=cursor.getString(cursor.getColumnIndexOrThrow(bdate))
+            val pay=cursor.getDouble(cursor.getColumnIndexOrThrow(pay))
+            val paid=cursor.getDouble(cursor.getColumnIndexOrThrow(paid))
+            val baki=cursor.getDouble(cursor.getColumnIndexOrThrow(baki))
+
+            val bi=bills(id,name,bdate,pay,paid,baki)
+            billlist.add(bi)
+        }
+        cursor.close()
+        db.close()
+        return billlist
+    }
+    fun getbibyid(billid:Int):bills{
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME5 WHERE $hid=?"
+        val cursor=db.rawQuery(query, arrayOf(billid.toString()))
+        cursor.moveToFirst()
+        val id=cursor.getInt(cursor.getColumnIndexOrThrow(hid))
+        val name=cursor.getString(cursor.getColumnIndexOrThrow(cusname))
+        val dates=cursor.getString(cursor.getColumnIndexOrThrow(bdate))
+        val tamount=cursor.getDouble(cursor.getColumnIndexOrThrow(pay))
+        val pamount=cursor.getDouble(cursor.getColumnIndexOrThrow(paid))
+        val ramount=cursor.getDouble(cursor.getColumnIndexOrThrow(baki))
+        cursor.close()
+        db.close()
+        return bills(id,name,dates,tamount,pamount,ramount)
+    }
+    fun getPdfByBillId(billid: Int): ByteArray? {
+        val db = readableDatabase
+        val query = "SELECT * FROM $TABLE_NAME5 WHERE $hid=?"
+        val cursor = db.rawQuery(query, arrayOf(billid.toString()))
+        var pdfData: ByteArray? = null
+        if (cursor.moveToFirst()) {
+            pdfData = cursor.getBlob(cursor.getColumnIndexOrThrow(bill))
+        }
+        cursor.close()
+        db.close()
+        return pdfData
+    }
+    fun updbill(b:bills){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(cusname,b.name)
+            put(pay,b.pay)
+            put(paid,b.paid)
+            put(baki,b.baki)
+        }
+        val whereclause="$hid=?"
+        val whereargs= arrayOf(b.id.toString())
+        db.update(TABLE_NAME5,values,whereclause,whereargs)
+    }
+    fun deletebill(billid:Int){
+        val db=writableDatabase
+        val whereClause="$hid=?"
+        val whereargs= arrayOf(billid.toString())
+        db.delete(TABLE_NAME5,whereClause,whereargs)
+        db.close()
+    }
+
+}
+/*
+    fun deleteorder(orderid:Int){
+        val db=writableDatabase
+        val whereClause="$OID=?"
+        val whereargs= arrayOf(orderid.toString())
+        db.delete(TABLE_NAME3,whereClause,whereargs)
+        db.close()
+
+fun updateorder(ou:ordersone){
+        val db=writableDatabase
+        val values=ContentValues().apply {
+            put(OR_BY,ou.name)
+            put(I_Na,ou.oitname)
+            put(I_pi,ou.oip)
+            put(Q_it,ou.qun)
+            put(total1,ou.Totala)
+            put(total_price,ou.finalp)
+            put(dateone,ou.date)
+            put(yesorno,ou.status)
+        }
+        val whereclause="$OID=?"
+        val whereargs= arrayOf(ou.id.toString())
+        db.update(TABLE_NAME3,values,whereclause,whereargs)
+        db.close()
+    }
+ fun getAllUser():List<customer>
+    {
+        val custlist= mutableListOf<customer>()
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME1"
+        val cursor=db.rawQuery(query,null)
+        while(cursor.moveToNext()){
+            val id=cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val name=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+            val mob=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MOBILE))
+            val addr=cursor.getString(cursor.getColumnIndexOrThrow(COLOMN_ADDR))
+
+            val cus=customer(id,name,mob,addr)
+            custlist.add(cus)
+        }
+        cursor.close()
+        db.close()
+        return custlist
+    }
+
+*  fun getuserbyId(userid:Int):customer{
+        val db=readableDatabase
+        val query="SELECT * FROM $TABLE_NAME1 WHERE $COLUMN_ID=$userid"
+        val cursor=db.rawQuery(query,null)
+        cursor.moveToFirst()
+        val id=cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+        val cname=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+        val cmob=cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_MOBILE))
+        val caddr=cursor.getString(cursor.getColumnIndexOrThrow(COLOMN_ADDR))
+        cursor.close()
+        db.close()
+        return customer(id,cname,cmob,caddr)
+        * val id=cursor.getInt(cursor.getColumnIndexOrThrow(OID))
+            val username=cursor.getString(cursor.getColumnIndexOrThrow(OR_BY))
+            val itemname=cursor.getString(cursor.getColumnIndexOrThrow(ITEM_NAME))
+            val itemprice=cursor.getDouble(cursor.getColumnIndexOrThrow(I_pi))
+            val qty=cursor.getInt(cursor.getColumnIndexOrThrow(Q_it))
+            val totl=cursor.getDouble(cursor.getColumnIndexOrThrow(total1))
+            val gto=cursor.getString(cursor.getColumnIndexOrThrow(total_price))
+            val date=cursor.getString(cursor.getColumnIndexOrThrow(dateone))
+            val status=cursor.getString(cursor.getColumnIndexOrThrow(yesorno))
+    }*/
+    ==============================================================================================>Depedency
+    dependencies {
+
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.1'
+    implementation 'com.itextpdf:itextpdf:5.5.13.1'
+    implementation 'com.google.android.material:material:1.5.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.3'
+    implementation 'androidx.compose.ui:ui-text-android:1.0.0-alpha06'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.3'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
+}
+==================================================================================================>Settings.gradle
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        google()
+        mavenCentral()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        maven { url 'https://www.jitpack.io' }
+    }
+}
+=======================================================================================================>gradle.properties
+android.nonTransitiveRClass=true
+android.enableJetifier=true
+=========================================================================================================>Display_PDF
+package com.example.three_three_four
+
+import android.graphics.Bitmap
+import android.graphics.pdf.PdfRenderer
+import androidx.appcompat.app.AppCompatActivity
+import android.os.Bundle
+import android.os.ParcelFileDescriptor
+import android.webkit.WebView
+import android.webkit.WebViewClient
+import android.widget.Button
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.Toast
+import com.github.chrisbanes.photoview.PhotoView
+import java.io.File
+
+class viewPdf : AppCompatActivity() {
+    private lateinit var pdfImageView: PhotoView
+    private lateinit var shareButton: Button
+
+    private var pdfFile: File? = null
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_view_pdf)
+
+        pdfImageView = findViewById(R.id.pdffhai)
+        shareButton = findViewById(R.id.shareButton)
+
+        val pdfPath = intent.getStringExtra("billid")
+        if (pdfPath != null) {
+            displayPDF(pdfPath)
+        } else {
+            Toast.makeText(this, "Error: No PDF file found.", Toast.LENGTH_SHORT).show()
+        }
+
+    }
+
+    private fun displayPDF(pdfPath: String) {
+        try {
+            val file = File(pdfPath)
+            val fileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
+            val pdfRenderer = PdfRenderer(fileDescriptor)
+            val page = pdfRenderer.openPage(0) // Open the first page
+
+            // Create bitmap to render PDF page
+            val bitmap = Bitmap.createBitmap(page.width, page.height, Bitmap.Config.ARGB_8888)
+            page.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_DISPLAY)
+            pdfImageView.setImageBitmap(bitmap)
+            page.close()
+            pdfRenderer.close()
+            fileDescriptor.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(this, "Failed to load PDF", Toast.LENGTH_SHORT).show()
+        }
+    }
+}
